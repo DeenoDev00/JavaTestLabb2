@@ -66,5 +66,20 @@ public class BookingSystemTest {
         verify(notificationService).sendBookingConfirmation(any(Booking.class));
     }
 
+    @Test
+    void bookRoom_shouldReturnFalse_whenRoomIsNotAvailable() throws NotificationException {
+        // Arrange
+        Room mockRoom = mock(Room.class);
+        when(timeProvider.getCurrentTime()).thenReturn(now);
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(mockRoom));
+        when(mockRoom.isAvailable(startTime, endTime)).thenReturn(false);
+
+        boolean result = bookingSystem.bookRoom(roomId, startTime, endTime);
+
+        assertThat(result).isFalse();
+        verify(roomRepository, never()).save(mockRoom);
+        verify(notificationService, never()).sendBookingConfirmation(any(Booking.class));
+    }
+
 
 }
