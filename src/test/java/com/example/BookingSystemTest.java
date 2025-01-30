@@ -1,9 +1,3 @@
-
-
-
-
-
-
 package com.example;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -79,6 +73,48 @@ public class BookingSystemTest {
         assertThat(result).isFalse();
         verify(roomRepository, never()).save(mockRoom);
         verify(notificationService, never()).sendBookingConfirmation(any(Booking.class));
+    }
+
+    @Test
+    void bookRoom_shouldThrowException_whenParametersAreInvalid() {
+        LocalDateTime validStartTime = LocalDateTime.now();
+        LocalDateTime validEndTime = validStartTime.plusHours(1);
+
+        when(timeProvider.getCurrentTime()).thenReturn(validStartTime);
+        assertThatThrownBy(() -> bookingSystem.bookRoom(null, validStartTime, validEndTime))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Bokning kräver giltiga start- och sluttider samt rum-id");
+
+        assertThatThrownBy(() -> bookingSystem.bookRoom(roomId, validStartTime.minusHours(2), validEndTime))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Kan inte boka tid i dåtid");
+
+
+        assertThatThrownBy(() -> bookingSystem.bookRoom(roomId, validEndTime, validStartTime))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Sluttid måste vara efter starttid");
+    }
+
+    @Test
+    void getAvailableRooms_shouldReturnAvailableRooms() {
+        Room mockRoom = mock(Room.class);
+        when(roomRepository.findAll()).thenReturn(Collections.singletonList(mockRoom));
+        when(mockRoom.isAvailable(startTime, endTime)).thenReturn(true);
+
+        List<Room> availableRooms = bookingSystem.getAvailableRooms(startTime, endTime);
+
+        assertThat(availableRooms).containsExactly(mockRoom);
+    }
+
+    @Test
+    void getAvailableRooms_shouldThrowException_whenParametersAreInvalid() {
+        assertThatThrownBy(() -> bookingSystem.getAvailableRooms(null, endTime))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Måste ange både start- och sluttid");
+
+        assertThatThrownBy(() -> bookingSystem.getAvailableRooms(startTime, startTime.minusHours(1)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Sluttid måste vara efter starttid");
     }
 
 
