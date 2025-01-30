@@ -118,4 +118,50 @@ public class BookingSystemTest {
     }
 
 
+
+    @Test
+    void cancelBooking_shouldReturnTrue_whenBookingExists() throws NotificationException {
+        String bookingId = UUID.randomUUID().toString();
+        Room mockRoom = mock(Room.class);
+        Booking booking = new Booking(bookingId, roomId, startTime, endTime);
+        when(mockRoom.hasBooking(bookingId)).thenReturn(true);
+        when(mockRoom.getBooking(bookingId)).thenReturn(booking);
+        when(timeProvider.getCurrentTime()).thenReturn(now);
+        when(roomRepository.findAll()).thenReturn(Collections.singletonList(mockRoom));
+
+        boolean result = bookingSystem.cancelBooking(bookingId);
+
+        assertThat(result).isTrue();
+        verify(roomRepository).save(mockRoom);
+        verify(notificationService).sendCancellationConfirmation(booking);
+    }
+
+    @Test
+    void cancelBooking_shouldThrowException_whenBookingHasStarted() {
+        String bookingId = UUID.randomUUID().toString();
+        Room mockRoom = mock(Room.class);
+        Booking booking = new Booking(bookingId, roomId, now.minusHours(1), endTime);
+        when(mockRoom.hasBooking(bookingId)).thenReturn(true);
+        when(mockRoom.getBooking(bookingId)).thenReturn(booking);
+        when(timeProvider.getCurrentTime()).thenReturn(now);
+        when(roomRepository.findAll()).thenReturn(Collections.singletonList(mockRoom));
+
+        // Act & Assert
+        assertThatThrownBy(() -> bookingSystem.cancelBooking(bookingId))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Kan inte avboka påbörjad eller avslutad bokning");
+    }
+
+    @Test
+    void cancelBooking_shouldReturnFalse_whenBookingDoesNotExist() throws NotificationException {
+        when(roomRepository.findAll()).thenReturn(Collections.singletonList(mock(Room.class)));
+
+        boolean result = bookingSystem.cancelBooking("nonExistentBookingId");
+
+        assertThat(result).isFalse();
+        verify(roomRepository, never()).save(any(Room.class));
+        verify(notificationService, never()).sendCancellationConfirmation(any(Booking.class));
+    }
 }
+
+
