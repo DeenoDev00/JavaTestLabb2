@@ -34,4 +34,16 @@ public class ShoppingCartTest {
 
         assertThat(cart.getTotalPrice()).isEqualTo(15.0); // Bara Banana kvar
     }
+
+    @Test
+    void updateQuantity_shouldUpdateItemQuantity() {
+        // Arrange
+        cart.addItem("Apple", 10.0, 2);
+
+        // Act
+        cart.updateQuantity("Apple", 5);
+
+        // Assert
+        assertThat(cart.getTotalPrice()).isEqualTo(50.0); // 10.0 * 5
+    }
 }
