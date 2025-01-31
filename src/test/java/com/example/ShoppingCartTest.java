@@ -24,4 +24,14 @@ public class ShoppingCartTest {
 
         assertThat(cart.getTotalPrice()).isEqualTo(20.0);
     }
+
+    @Test
+    void removeItem_shouldRemoveItemFromCart() {
+        cart.addItem("Apple", 10.0, 2);
+        cart.addItem("Banana", 5.0, 3);
+
+        cart.removeItem("Apple");
+
+        assertThat(cart.getTotalPrice()).isEqualTo(15.0); // Bara Banana kvar
+    }
 }
