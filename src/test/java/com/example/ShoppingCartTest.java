@@ -44,5 +44,15 @@ public class ShoppingCartTest {
         assertThat(cart.getTotalPrice()).isEqualTo(50.0);
     }
 
+    @Test
+    void getTotalPrice_shouldReturnCorrectTotalPrice() {
+        cart.addItem("Apple", 10.0, 2); // 2 äpplen à 10.0 = 20.0
+        cart.addItem("Banana", 5.0, 3); // 3 bananer à 5.0 = 15.0
+
+        double totalPrice = cart.getTotalPrice();
+
+        assertThat(totalPrice).isEqualTo(35.0); // 20.0 + 15.0
+    }
+
 
 }
