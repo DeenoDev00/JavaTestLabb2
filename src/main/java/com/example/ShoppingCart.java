@@ -49,6 +49,18 @@ public class ShoppingCart {
         quantities.put(itemName, newQuantity);
     }
 
+    public void applyDiscount(double discountRate) {
+        if (discountRate < 0 || discountRate > 1) {
+            throw new IllegalArgumentException("Rabatt måste vara mellan 0 och 1");
+        }
+        for (Map.Entry<String, Double> entry : items.entrySet()) {
+            double discountedPrice = entry.getValue() * (1 - discountRate);
+            items.put(entry.getKey(), discountedPrice);
+        }
+    }
+
+
+
 
 
 }
