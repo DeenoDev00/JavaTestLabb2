@@ -3,6 +3,7 @@ package com.example;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 public class ShoppingCartTest {
 
@@ -64,7 +65,25 @@ public class ShoppingCartTest {
         assertThat(cart.getTotalPrice()).isEqualTo(31.5); // 35.0 * 0.9
     }
 
+    @Test
+    void applyDiscount_shouldThrowException_whenDiscountIsInvalid() {
+        assertThatThrownBy(() -> cart.applyDiscount(-0.1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Rabatt måste vara mellan 0 och 1");
 
+        assertThatThrownBy(() -> cart.applyDiscount(1.1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Rabatt måste vara mellan 0 och 1");
+    }
+
+    @Test
+    void updateQuantity_shouldThrowException_whenQuantityIsInvalid() {
+        cart.addItem("Apple", 10.0, 2);
+
+        assertThatThrownBy(() -> cart.updateQuantity("Apple", -1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Kvantitet måste vara större än 0");
+    }
 
 
 }
