@@ -1,23 +1,30 @@
 package com.example.payment;
 
-//public class PaymentProcessor {
-//    private static final String API_KEY = "sk_test_123456";
-//
-//    public boolean processPayment(double amount) {
-//        // Anropar extern betaltjänst direkt med statisk API-nyckel
-//        PaymentApiResponse response = PaymentApi.charge(API_KEY, amount);
-//
-//        // Skriver till databas direkt
-//        if (response.isSuccess()) {
-//            DatabaseConnection.getInstance()
-//                    .executeUpdate("INSERT INTO payments (amount, status) VALUES (" + amount + ", 'SUCCESS')");
-//        }
-//
-//        // Skickar e-post direkt
-//        if (response.isSuccess()) {
-//            EmailService.sendPaymentConfirmation("user@example.com", amount);
-//        }
-//
-//        return response.isSuccess();
-//    }
-//}
+import com.example.payment.DatabaseService;
+import com.example.payment.EmailService;
+import com.example.payment.PaymentApiResponse;
+import com.example.payment.PaymentService;
+
+public class PaymentProcessor {
+    private final PaymentService paymentService;
+    private final DatabaseService databaseService;
+    private final EmailService emailService;
+
+    public PaymentProcessor(PaymentService paymentService, DatabaseService databaseService, EmailService emailService) {
+        this.paymentService = paymentService;
+        this.databaseService = databaseService;
+        this.emailService = emailService;
+    }
+
+    public boolean processPayment(double amount) {
+        PaymentApiResponse response = paymentService.processPayment(amount);
+
+        if (response.isSuccess()) {
+            databaseService.savePayment(amount, "SUCCESS");
+            emailService.sendPaymentConfirmation("user@example.com", amount);
+        }
+
+        return response.isSuccess();
+    }
+}
+
